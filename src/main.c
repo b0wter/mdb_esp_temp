@@ -51,6 +51,18 @@ uint32 user_rf_cal_sector_set(void)
     return rf_cal_sec;
 }
 
+void blink(uint8 count, uint32 pin)
+{
+    int i = 0;
+    for(i = 0; i < count; ++i)
+    {
+        GPIO_OUTPUT_SET(pin, GPIO_ON);
+        vTaskDelay(200/portTICK_RATE_MS);
+        GPIO_OUTPUT_SET(pin, GPIO_OFF);
+        vTaskDelay(200/portTICK_RATE_MS);
+    }
+}
+
 void task_blink(void* ignore)
 {
     gpio16_output_conf();
@@ -58,16 +70,22 @@ void task_blink(void* ignore)
     while(true) {
         switch(get_wifi_state())
         {
-            case 0:
+            case WIFI_STATUS_NONE:
                 GPIO_OUTPUT_SET(WIFI_CONNECTION_LED, GPIO_OFF);
                 break;
-            case 1:
-                GPIO_OUTPUT_SET(WIFI_CONNECTION_LED, GPIO_OFF);
-                vTaskDelay(1000/portTICK_RATE_MS);
-                GPIO_OUTPUT_SET(WIFI_CONNECTION_LED, GPIO_ON);
+            case WIFI_STATUS_SCANNING:
+                blink(1, WIFI_CONNECTION_LED);
                 vTaskDelay(1000/portTICK_RATE_MS);
                 break;
-            case 2:
+            case WIFI_STATUS_FINISHED_SCAN:
+                blink(2, WIFI_CONNECTION_LED);
+                vTaskDelay(1000/portTICK_RATE_MS);
+                break;
+            case WIFI_STATUS_CONNECTING:
+                blink(3, WIFI_CONNECTION_LED);
+                vTaskDelay(1000/portTICK_RATE_MS);
+                break;
+            case WIFI_STATUS_CONNECTED:
                 GPIO_OUTPUT_SET(WIFI_CONNECTION_LED, GPIO_ON);
                 break;
         }

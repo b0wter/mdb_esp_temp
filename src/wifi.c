@@ -3,7 +3,7 @@
 #include "freertos/task.h"
 #include "wifi.h"
 
-int Wifi_State;
+int Wifi_State = WIFI_STATUS_NONE;
 
 int get_wifi_state(void)
 {
@@ -12,6 +12,7 @@ int get_wifi_state(void)
 
 void on_wifi_scan_finished(void* arg, STATUS status)
 {
+    Wifi_State = WIFI_STATUS_SCANNING;
     uint8	ssid[33];
     char	temp[128];
     if	(status	==	OK)	{
@@ -33,16 +34,13 @@ void on_wifi_scan_finished(void* arg, STATUS status)
     {
         printf("Wifi scan failed.\r\n");
     }
-}
 
-void init_wifi(void)
-{
-    Wifi_State = 0;
-
+    Wifi_State = WIFI_STATUS_FINISHED_SCAN;
 }
 
 void task_wifi_init(void* ignore)
 {
+    Wifi_State = WIFI_STATUS_NONE;
     vTaskDelay(5000/portTICK_RATE_MS);
     wifi_set_opmode(STATION_MODE);
     wifi_station_scan(NULL, on_wifi_scan_finished);
