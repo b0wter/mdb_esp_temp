@@ -2,15 +2,11 @@
 #include "freertos/task.h"
 #include "gpio.h"
 #include "uart.h"
-#include "esp_wifi.h"
 #include "wifi.h"
 #include <string.h>
 
 #define GPIO_ON 1
 #define GPIO_OFF 0
-#define WIFI_CONNECTION_LED 5
-
-int Wifi_State = 0;
 
 /******************************************************************************
  * FunctionName : user_rf_cal_sector_set
@@ -60,7 +56,7 @@ void task_blink(void* ignore)
     gpio16_output_conf();
 
     while(true) {
-        switch(Wifi_State)
+        switch(get_wifi_state())
         {
             case 0:
                 GPIO_OUTPUT_SET(WIFI_CONNECTION_LED, GPIO_OFF);
@@ -77,45 +73,6 @@ void task_blink(void* ignore)
         }
     }
 
-    vTaskDelete(NULL);
-}
-
-void wifi_scan_done(void* arg, STATUS status)
-{
-    Wifi_State = 2;
-    uint8 ssid[33];
-    char temp[128];
-
-    if(status == OK)
-    {
-        struct bss_info *bss_link = (struct bss_info *) arg;
-
-        while(bss_link != NULL)
-        {
-            memset(ssid, 0, 33);
-            if(strlen(bss_link->ssid) <= 32)
-                memcpy(ssid, bss_link->ssid, strlen(bss_link->ssid));
-            else
-                memcpy(ssid, bss_link->ssid, 32);
-
-            printf("(%d,\"%s,%d,\""MACSTR"\",%d)\r\n", bss_link->authmode, ssid, bss_link->rssi,MAC2STR(bss_link->bssid), bss_link->channel);
-            bss_link = bss_link->next.stqe_next;
-        }
-    }
-}
-
-void wifi_config(void)
-{
-    Wifi_State = 0;
-    wifi_set_opmode(STATION_MODE);
-    Wifi_State = 1;
-    wifi_station_scan(NULL, wifi_scan_done);
-}
-
-void task_wifi_init(void* ignore)
-{
-    vTaskDelay(5000/portTICK_RATE_MS);
-    wifi_config();
     vTaskDelete(NULL);
 }
 
