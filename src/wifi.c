@@ -2,6 +2,8 @@
 #include "esp_wifi.h"
 #include "freertos/task.h"
 #include "wifi.h"
+#include "led.h"
+#include "output.h"
 
 int Wifi_State = WIFI_STATUS_NONE;
 
@@ -24,15 +26,18 @@ void on_wifi_scan_finished(void* arg, STATUS status)
                 memcpy(ssid,bss_link->ssid,	strlen(bss_link->ssid));
             else
                 memcpy(ssid,bss_link->ssid,32);
-                printf("(%d,\"%s\",%d,\""MACSTR"\",%d)\r\n",
-                    bss_link->authmode,	ssid,bss_link->rssi,
-                    MAC2STR(bss_link->bssid),bss_link->channel);
-                    bss_link=bss_link->next.stqe_next;
+
+            char* wifiString;
+            sprintf(wifiString, "(%d,\"%s\",%d,\""MACSTR"\",%d)\r\n",
+                bss_link->authmode,	ssid,bss_link->rssi,
+                MAC2STR(bss_link->bssid),bss_link->channel);
+                bss_link=bss_link->next.stqe_next;
+            add_output(wifiString);
         }
     }
     else
     {
-        printf("Wifi scan failed.\r\n");
+        add_output("Wifi scan failed.\r\n");
     }
 
     Wifi_State = WIFI_STATUS_FINISHED_SCAN;

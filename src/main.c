@@ -2,8 +2,10 @@
 #include "freertos/task.h"
 #include "gpio.h"
 #include "uart.h"
-#include "wifi.h"
 #include <string.h>
+
+#include "wifi.h"
+#include "radio.h"
 
 #define GPIO_ON 1
 #define GPIO_OFF 0
@@ -107,6 +109,26 @@ void uart_config(void)
     UART_ParamConfig(UART0,	&uart_config);
 }
 
+void reset_gpio(void)
+{
+    GPIO_OUTPUT_SET(0, GPIO_OFF);
+    GPIO_OUTPUT_SET(1, GPIO_OFF);
+    GPIO_OUTPUT_SET(2, GPIO_OFF);
+    GPIO_OUTPUT_SET(3, GPIO_OFF);
+    GPIO_OUTPUT_SET(4, GPIO_OFF);
+    GPIO_OUTPUT_SET(5, GPIO_OFF);
+    GPIO_OUTPUT_SET(6, GPIO_OFF);
+    GPIO_OUTPUT_SET(7, GPIO_OFF);
+    GPIO_OUTPUT_SET(8, GPIO_OFF);
+    GPIO_OUTPUT_SET(9, GPIO_OFF);
+    GPIO_OUTPUT_SET(10, GPIO_OFF);
+    GPIO_OUTPUT_SET(11, GPIO_OFF);
+    GPIO_OUTPUT_SET(12, GPIO_OFF);
+    GPIO_OUTPUT_SET(13, GPIO_OFF);
+    GPIO_OUTPUT_SET(14, GPIO_OFF);
+    GPIO_OUTPUT_SET(15, GPIO_OFF);
+}
+
 /******************************************************************************
  * FunctionName : user_init
  * Description  : entry of user application, init user function here
@@ -116,6 +138,8 @@ void uart_config(void)
 void user_init(void)
 {
     uart_config();
+    reset_gpio();
     xTaskCreate(&task_wifi_init, "wifi init", 2048, NULL, 1, NULL);
+    xTaskCreate(&task_radio_init, "radio init", 2048, NULL, 1, NULL);
     xTaskCreate(&task_blink, "startup", 2048, NULL, 1, NULL);
 }
